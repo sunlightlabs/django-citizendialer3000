@@ -1,1 +1,1 @@
-django>=1.2.0
+python-sunlightapi==1.0.0

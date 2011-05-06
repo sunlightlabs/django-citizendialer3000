@@ -40,11 +40,36 @@ class Campaign(models.Model):
 class Contact(models.Model):
     campaign = models.ForeignKey(Campaign, related_name='contacts')
     bioguide_id = models.CharField(max_length=16)
+    title = models.CharField(max_length=8)
     first_name = models.CharField(max_length=32)
     last_name = models.CharField(max_length=64)
+    nickname = models.CharField(max_length=32)
+    gender = models.CharField(max_length=1)
     state = USStateField()
+    party = models.CharField(max_length=1)
+    phone = models.CharField(max_length=16)
     
     position = models.CharField(choices=POSITIONS, default='?')
     call_goal = models.IntegerField(default=0)
     
+    class Meta:
+        ordering = ('last_name','first_name')
+    
+    def __unicode__(self):
+        return u"%s %s" % (self.first_name, self.last_name)
+
+class Call(models.Model):
+    contact = models.ForeignKey(Contact, related_name='calls')
+    position = models.CharField(choices=POSITIONS, default='?')
+    caller_name = models.CharField(max_length=64, blank=True)
+    caller_email = models.EmailField(blank=True)
+    caller_zipcode = models.CharField(max_length=5, blank=True)
+    notes = models.TextField(blank=True)
+    timestamp = models.DateTimeField(default=datetime.datetime.utcnow)
+    
+    class Meta:
+        ordering = ('-timestamp',)
+    
+    def __unicode__(self):
+        return position
     
