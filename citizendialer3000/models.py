@@ -36,6 +36,10 @@ class Campaign(models.Model):
     
     def __unicode__(self):
         return self.title
+        
+    @models.permalink
+    def get_absolute_url(self):
+        return ('citizendialer3000.views.campaign_detail', (self.slug,))
 
 class Contact(models.Model):
     campaign = models.ForeignKey(Campaign, related_name='contacts')
@@ -57,6 +61,10 @@ class Contact(models.Model):
     
     def __unicode__(self):
         return u"%s %s" % (self.first_name, self.last_name)
+        
+    @models.permalink
+    def get_absolute_url(self):
+        return ('citizendialer3000.views.contact_detail', (self.campaign.slug, self.pk))
 
 class Call(models.Model):
     contact = models.ForeignKey(Contact, related_name='calls')

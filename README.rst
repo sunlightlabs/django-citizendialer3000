@@ -2,7 +2,7 @@
 django-citizendialer3000
 ========================
 
-http://cloudmailin.com/
+http://github.com/sunlightlabs/django-citizendialer3000
 
 ------------
 Requirements
@@ -21,5 +21,9 @@ Add to *INSTALLED_APPS*::
 
     'citizendialer3000'
 
-Usage
+cache
 =====
+
+
+messages
+========
