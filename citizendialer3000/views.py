@@ -16,7 +16,7 @@ KEY_PREFIX = getattr(settings, 'CD3000_KEY_PREFIX', 'CD3000')
 TIMEOUT = getattr(settings, 'CD3000_CACHE_TIMEOUT', 60 * 10) # 10 minutes
 
 # setup API
-sunlightapi.apikey = getattr(settings, 'CD3000_SUNLIGHTAPI_KEY')
+sunlight.apikey = getattr(settings, 'CD3000_SUNLIGHTAPI_KEY')
 
 # zipcode validation regex
 ZIPCODE_RE = re.compile(r'^\d{5}$')
@@ -45,7 +45,7 @@ def campaign_detail(request, slug):
         key = "%s_ZIPCODE_%s" % (KEY_PREFIX, zipcode)
         bids = cache.get(key)
         if bids is None:
-            mocs = sunlightapi.legislators.allForZip(zipcode)
+            mocs = sunlight.legislators.allForZip(zipcode)
             bids = [moc.bioguide_id for moc in mocs]
             cache.set(key, bids, TIMEOUT)
         
@@ -92,7 +92,7 @@ def contact_detail(request, slug, contact_id):
         'form': form,
     }
 
-    return render_to_response('citizendialer3000/campaign_detail.html', data,
+    return render_to_response('citizendialer3000/contact_detail.html', data,
                               context_instance=RequestContext(request))
 
 def complete(request, slug):

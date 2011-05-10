@@ -1,0 +1,23 @@
+{% extends "citizendialer3000/base.html" %}
+
+{% block content %}
+    <h2>{{ campaign.title }}</h2>
+    <form action="{% url call_campaign campaign.slug %}" method="get">
+        <ul>
+            <li>
+                <label for="zipcode">Zipcode</label>
+                <input type="text" name="zipcode" id="zipcode" size="5" maxlength="5">
+            </li>
+        </ul>
+        <input type="submit">
+    </form>
+    {% if contacts %}    
+        <ul>
+            {% for contact in contacts %}
+                <li>
+                    <a href="{% url call_contact campaign.slug contact.pk %}">{{ contact.title }} {{ contact.full_name }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endblock %}

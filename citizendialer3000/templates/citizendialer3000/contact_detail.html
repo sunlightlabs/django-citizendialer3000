@@ -1,0 +1,17 @@
+{% extends "citizendialer3000/base.html" %}
+
+{% block content %}
+    <h2>{{ campaign.title }}</h2>
+    <form action="{% url call_campaign campaign.slug %}" method="post">
+        {% csrf_token %}
+        <ul>
+            {{ form.as_ul }}
+        </ul>
+        <input type="submit">
+    </form>
+    <ul>
+        {% for campaign in campaigns %}
+            <li><a href="{% url call_campaign campaign.slug %}">{{ campaign }}</a></li>
+        {% endfor %}
+    </ul>
+{% endblock %}

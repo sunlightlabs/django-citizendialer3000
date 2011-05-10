@@ -9,8 +9,8 @@ POSITIONS = (
 )
 
 class Campaign(models.Model):
-    title = models.CharField(max_length=255)
-    slug = models.SlugField()
+    title = models.CharField(max_length=255, unique=True)
+    slug = models.SlugField(unique=True)
     content = models.TextField(blank=True)
     timestamp = models.DateTimeField(default=datetime.datetime.utcnow)
     
@@ -53,11 +53,12 @@ class Contact(models.Model):
     party = models.CharField(max_length=1)
     phone = models.CharField(max_length=16)
     
-    position = models.CharField(choices=POSITIONS, default='?')
+    position = models.CharField(max_length=1, choices=POSITIONS, default='?')
     call_goal = models.IntegerField(default=0)
     
     class Meta:
         ordering = ('last_name','first_name')
+        unique_together = ('campaign','bioguide_id')
     
     def __unicode__(self):
         return u"%s %s" % (self.first_name, self.last_name)
@@ -65,10 +66,25 @@ class Contact(models.Model):
     @models.permalink
     def get_absolute_url(self):
         return ('citizendialer3000.views.contact_detail', (self.campaign.slug, self.pk))
+    
+    def full_name(self):
+        return u"%s %s" % (
+            self.nickname or self.first_name,
+            self.last_name,
+        )
+    
+    def bio_name(self):
+        return u"%s %s %s (%s-%s)" % (
+            self.title,
+            self.nickname or self.first_name,
+            self.last_name,
+            self.party,
+            self.state,
+        )
 
 class Call(models.Model):
     contact = models.ForeignKey(Contact, related_name='calls')
-    position = models.CharField(choices=POSITIONS, default='?')
+    position = models.CharField(max_length=1, choices=POSITIONS, default='?')
     caller_name = models.CharField(max_length=64, blank=True)
     caller_email = models.EmailField(blank=True)
     caller_zipcode = models.CharField(max_length=5, blank=True)
@@ -79,5 +95,5 @@ class Call(models.Model):
         ordering = ('-timestamp',)
     
     def __unicode__(self):
-        return position
+        return self.position
     
