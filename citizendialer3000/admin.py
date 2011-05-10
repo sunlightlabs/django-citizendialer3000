@@ -13,6 +13,7 @@ admin.site.register(Campaign, CampaignAdmin)
 class CallInline(admin.TabularInline):
     fields = ('position','caller_name','notes','timestamp')
     readonly_fields = ('timestamp',)
+    extra = 0
     model = Call
 
 class ContactAdmin(admin.ModelAdmin):
