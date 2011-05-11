@@ -1,6 +1,7 @@
 {% extends "citizendialer3000/base.html" %}
 
 {% block content %}
+    <h2>Our current campaigns:</h2>
     <ul>
         {% for campaign in campaigns %}
             <li><a href="{% url call_campaign campaign.slug %}">{{ campaign }}</a></li>

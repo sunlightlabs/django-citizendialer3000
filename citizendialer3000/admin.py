@@ -3,6 +3,7 @@ from citizendialer3000.models import Campaign, Contact, Call
 
 class CampaignAdmin(admin.ModelAdmin):
     list_display = ('title','is_public','is_complete')
+    list_editable = ('is_public','is_complete')
     list_filter = ('is_public','is_complete')
     prepopulated_fields = {'slug': ('title',)}
     search_fields = ('title',)

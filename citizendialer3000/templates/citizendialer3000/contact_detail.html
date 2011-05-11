@@ -1,17 +1,94 @@
 {% extends "citizendialer3000/base.html" %}
+{% load markup %}
 
 {% block content %}
-    <h2>{{ campaign.title }}</h2>
-    <form action="{% url call_campaign campaign.slug %}" method="post">
-        {% csrf_token %}
-        <ul>
-            {{ form.as_ul }}
+    
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
         </ul>
-        <input type="submit">
-    </form>
-    <ul>
-        {% for campaign in campaigns %}
-            <li><a href="{% url call_campaign campaign.slug %}">{{ campaign }}</a></li>
-        {% endfor %}
-    </ul>
+    {% endif %}
+
+    <h2>{{ campaign.title }}</h2>
+    
+    {% if contact.position == '+' %}
+        <p>{{ contact.title }}. {{ contact.last_name }} <strong>supports</strong> {{ campaign.title }}</p>
+    {% endif %}
+    {% if contact.position == '-' %}
+        <p>{{ contact.title }}. {{ contact.last_name }} <strong>opposes</strong> {{ campaign.title }}</p>
+    {% endif %}
+    
+    <ol>
+        <li>
+            <p>Call {{ contact.title }}. {{ contact.last_name }}'s office: {{ contact.phone }}</p>
+        </li>
+        <li>
+            <p>Ask to speak to a legislative aide or you can leave a message with the receptionist.</p>
+            <p>Suggested conversation script:</p>
+            <blockquote>
+                {% if contact.position == '?' %}
+                    {{ campaign.script|markdown }}
+                {% endif %}
+                {% if contact.position == '+' %}
+                    {{ campaign.support_script|markdown }}
+                {% endif %}
+                {% if contact.position == '-' %}
+                    {{ campaign.oppose_script|markdown }}
+                {% endif %}
+            </blockquote>
+            {% if contact.position == '?' %}
+                <ul>
+                    <li>
+                        <p>If supports:</p>
+                        <blockquote>{{ campaign.yes_response|markdown }}</blockquote>
+                    </li>
+                    <li>
+                        <p>If opposes:</p>
+                        <blockquote>{{ campaign.no_response|markdown }}</blockquote>
+                    </li>
+                    <li>
+                        <p>Otherwise:</p>
+                        <blockquote>{{ campaign.other_response|markdown }}</blockquote>
+                    </li>
+                </ul>
+            {% endif %}
+        </li>
+        <li>
+            <p>Record the response.</p>
+            <form action="{% url call_contact campaign.slug contact.pk %}" method="post">
+                {% csrf_token %}
+                <ul>
+                    <li>
+                        <label for="id_position">Position:</label>
+                        {{ form.position }}
+                    </li>
+                </ul>
+                <fieldset>
+                    <legend>The following fields are optional</legend>
+                    <ul>
+                        <li>
+                            <label for="id_caller_name">Your name:</label>
+                            {{ form.caller_name }}
+                        </li> 
+                        <li>
+                            <label for="id_caller_email">Your email:</label>
+                            {{ form.caller_email }}
+                        </li> 
+                        <li>
+                            <label for="id_caller_zipcode">Your zipcode:</label>
+                            {{ form.caller_zipcode }}
+                        </li> 
+                        <li>
+                            <label for="id_notes">Notes:</label>
+                            {{ form.notes }}
+                        </li>
+                    </ul>
+                </fieldset>
+                <input type="submit">
+            </form>
+        </li>
+    </ol>
+    
 {% endblock %}

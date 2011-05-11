@@ -1,6 +1,10 @@
 from django.contrib.localflavor.us.models import USStateField
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 import datetime
+
+# model definitions
 
 POSITIONS = (
     ('?', 'unknown'),
@@ -39,7 +43,7 @@ class Campaign(models.Model):
         
     @models.permalink
     def get_absolute_url(self):
-        return ('citizendialer3000.views.campaign_detail', (self.slug,))
+        return ('citizendialer3000.views.callcampaign_detail', (self.slug,))
 
 class Contact(models.Model):
     campaign = models.ForeignKey(Campaign, related_name='contacts')
@@ -74,7 +78,7 @@ class Contact(models.Model):
         )
     
     def bio_name(self):
-        return u"%s %s %s (%s-%s)" % (
+        return u"%s. %s %s (%s-%s)" % (
             self.title,
             self.nickname or self.first_name,
             self.last_name,
@@ -96,4 +100,11 @@ class Call(models.Model):
     
     def __unicode__(self):
         return self.position
-    
+
+# signal handlers
+
+@receiver(post_save, sender=Campaign)
+def campaignsave_callback(sender, **kwargs):
+    from citizendialer3000.loading import load_sunlightapi
+    if kwargs.get('created', False):
+        load_sunlightapi(kwargs['instance'])

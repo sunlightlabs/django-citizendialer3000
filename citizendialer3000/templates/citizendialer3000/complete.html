@@ -1,0 +1,16 @@
+{% extends "citizendialer3000/base.html" %}
+
+{% block content %}
+
+    <h2>Thank you for your support!</h2>
+    
+    <ol>
+        <li>
+            <p>Share with your friends:</p>
+            <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://sunlightfoundation.com{% url call_campaign campaign.slug %}" data-text="I know where my representatives stand on {{ campaign.title }}. Do you?" data-count="horizontal" data-via="sunfoundation">Tweet</a><script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>
+            <iframe src="http://www.facebook.com/plugins/like.php?app_id=156634507737701&amp;href=http://sunlightfoundation.com{% url call_campaign campaign.slug %}&amp;send=false&amp;layout=button_count&amp;width=450&amp;show_faces=true&amp;action=like&amp;colorscheme=light&amp;font&amp;height=21" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:450px; height:21px;" allowTransparency="true"></iframe>
+        </li>
+        <li><p><a href="{% url call_campaign campaign.slug %}{% if zipcode %}?zipcode={{ zipcode }}{% endif %}">Make another call</a></p></li>
+    </ol>
+    
+{% endblock %}

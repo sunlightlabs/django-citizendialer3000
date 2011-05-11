@@ -1,7 +1,9 @@
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
+from django.db.models import Count
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
@@ -14,6 +16,7 @@ import re
 # get custom cache key prefix, if set
 KEY_PREFIX = getattr(settings, 'CD3000_KEY_PREFIX', 'CD3000')
 TIMEOUT = getattr(settings, 'CD3000_CACHE_TIMEOUT', 60 * 10) # 10 minutes
+ZIPCODE_SESSION_KEY = 'citizendialer3000_zipcode'
 
 # setup API
 sunlight.apikey = getattr(settings, 'CD3000_SUNLIGHTAPI_KEY')
@@ -21,22 +24,30 @@ sunlight.apikey = getattr(settings, 'CD3000_SUNLIGHTAPI_KEY')
 # zipcode validation regex
 ZIPCODE_RE = re.compile(r'^\d{5}$')
 
-def campaign_list(request):
+def callcampaign_list(request):
     data = {
         'campaigns': Campaign.objects.filter(is_public=True),
     }
     return render_to_response('citizendialer3000/campaign_list.html', data,
                               context_instance=RequestContext(request))
 
-def campaign_detail(request, slug):
+def callcampaign_detail(request, slug):
     
     campaign = get_object_or_404(Campaign, slug=slug)
+    if not campaign.is_public:
+        return HttpResponseRedirect(reverse('call_list'))
     
     data = {'campaign': campaign}
     
-    if 'zipcode' in request.GET:
+    if campaign.is_complete:
+        
+        contacts = campaign.contacts.all().annotate(Count("calls")).order_by('-calls__count')
+        data['contacts'] = contacts
+    
+    elif 'zipcode' in request.GET:
         
         zipcode = request.GET['zipcode']
+        request.session[ZIPCODE_SESSION_KEY] = zipcode
         
         if not ZIPCODE_RE.match(zipcode):
             return HttpResponseForbidden('invalid zipcode')
@@ -49,7 +60,7 @@ def campaign_detail(request, slug):
             bids = [moc.bioguide_id for moc in mocs]
             cache.set(key, bids, TIMEOUT)
         
-        contacts = Contact.objects.filter(campaign=campaign, bioguide_id__in=bids)
+        contacts = Contact.objects.filter(campaign=campaign, bioguide_id__in=bids).annotate(Count("calls"))
         
         if request.is_ajax():
             
@@ -69,7 +80,13 @@ def campaign_detail(request, slug):
 def contact_detail(request, slug, contact_id):
 
     campaign = get_object_or_404(Campaign, slug=slug)
-    contact = get_object_or_404(Contact, campaign=campaign, pk=contact_id)
+    
+    if campaign.is_complete:
+        return HttpResponseRedirect(reverse('callcampaign_detail', args=[slug]))
+    elif not campaign.is_public:
+        return HttpResponseRedirect(reverse('callcampaign_list'))
+        
+    contact = get_object_or_404(Contact, pk=contact_id)
     
     if request.method == 'POST':
         
@@ -84,7 +101,10 @@ def contact_detail(request, slug, contact_id):
             messages.error(request, 'Whoops, something went wrong.')
     
     else:
-        form = CallForm()
+        form = CallForm(initial={
+            'position': contact.position,
+            'caller_zipcode': request.session.get(ZIPCODE_SESSION_KEY, None),
+        })
         
     data = {
         'campaign': campaign,
@@ -98,6 +118,7 @@ def contact_detail(request, slug, contact_id):
 def complete(request, slug):
     data = {
         'campaign': get_object_or_404(Campaign, slug=slug),
+        'zipcode': request.session.get(ZIPCODE_SESSION_KEY, None),
     }
     return render_to_response('citizendialer3000/complete.html', data)
 
