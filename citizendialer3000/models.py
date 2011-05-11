@@ -34,6 +34,9 @@ class Campaign(models.Model):
         help_text="Script to be read on negative response")
     other_response = models.TextField(blank=True,
         help_text="Script to be read on other response")
+        
+    wrapup = models.TextField(blank=True,
+        help_text="Text to be shown once campaign is complete")
     
     class Meta:
         ordering = ('title',)
@@ -89,7 +92,8 @@ class Contact(models.Model):
 class Call(models.Model):
     contact = models.ForeignKey(Contact, related_name='calls')
     position = models.CharField(max_length=1, choices=POSITIONS, default='?')
-    caller_name = models.CharField(max_length=64, blank=True)
+    caller_first_name = models.CharField(max_length=32, blank=True)
+    caller_last_name = models.CharField(max_length=64, blank=True)
     caller_email = models.EmailField(blank=True)
     caller_zipcode = models.CharField(max_length=5, blank=True)
     notes = models.TextField(blank=True)

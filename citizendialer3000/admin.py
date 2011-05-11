@@ -12,7 +12,7 @@ admin.site.register(Campaign, CampaignAdmin)
 
 
 class CallInline(admin.TabularInline):
-    fields = ('position','caller_name','notes','timestamp')
+    fields = ('position','caller_first_name','caller_last_name','notes','timestamp')
     readonly_fields = ('timestamp',)
     extra = 0
     model = Call
@@ -21,6 +21,7 @@ class ContactAdmin(admin.ModelAdmin):
     inlines = (CallInline,)
     list_display = ('campaign','bio_name','bioguide_id','phone','position','call_goal')
     list_display_links = ('bio_name',)
+    list_editable = ('position',)
     list_filter = ('campaign','position','party','state')
     search_fields = ('first_name','last_name','nickname','phone')
 

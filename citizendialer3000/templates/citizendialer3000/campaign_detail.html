@@ -20,28 +20,7 @@
     
         <p>This call campaign is complete. Thank you for your help!</p>
         
-        <h3>Results</h3>
-        
-        <table>
-            <thead>
-                <tr>
-                    <th>Member of Congress</th>
-                    <th>State</th>
-                    <th>Party</th>
-                    <th>Total Calls</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for contact in contacts %}
-                    <tr>
-                        <td>{{ contact.title }}. {{ contact.full_name }}</td>
-                        <td>{{ contact.state }}</td>
-                        <td>{{ contact.party }}</td>
-                        <td>{{ contact.calls__count }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        {{ campaign.wrapup|markdown }}
     
     {% else %}
     

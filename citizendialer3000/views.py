@@ -16,7 +16,6 @@ import re
 # get custom cache key prefix, if set
 KEY_PREFIX = getattr(settings, 'CD3000_KEY_PREFIX', 'CD3000')
 TIMEOUT = getattr(settings, 'CD3000_CACHE_TIMEOUT', 60 * 10) # 10 minutes
-ZIPCODE_SESSION_KEY = 'citizendialer3000_zipcode'
 
 # setup API
 sunlight.apikey = getattr(settings, 'CD3000_SUNLIGHTAPI_KEY')
@@ -47,7 +46,7 @@ def callcampaign_detail(request, slug):
     elif 'zipcode' in request.GET:
         
         zipcode = request.GET['zipcode']
-        request.session[ZIPCODE_SESSION_KEY] = zipcode
+        request.session['cd3000_zipcode'] = zipcode
         
         if not ZIPCODE_RE.match(zipcode):
             return HttpResponseForbidden('invalid zipcode')
@@ -93,6 +92,11 @@ def contact_detail(request, slug, contact_id):
         call = Call(contact=contact)
         form = CallForm(request.POST, instance=call)
         
+        request.session.set_expiry(0)
+        request.session['cd3000_firstname'] = request.POST.get('caller_first_name', None)
+        request.session['cd3000_lastname'] = request.POST.get('caller_last_name', None)
+        request.session['cd3000_email'] = request.POST.get('caller_email', None)
+        
         if form.is_valid():
             form.save()
             return HttpResponseRedirect(reverse('call_complete', args=[slug]))
@@ -103,7 +107,10 @@ def contact_detail(request, slug, contact_id):
     else:
         form = CallForm(initial={
             'position': contact.position,
-            'caller_zipcode': request.session.get(ZIPCODE_SESSION_KEY, None),
+            'caller_first_name': request.session.get('cd3000_firstname', None),
+            'caller_last_name': request.session.get('cd3000_lastname', None),
+            'caller_email': request.session.get('cd3000_email', None),
+            'caller_zipcode': request.session.get('cd3000_zipcode', None),
         })
         
     data = {
@@ -118,7 +125,10 @@ def contact_detail(request, slug, contact_id):
 def complete(request, slug):
     data = {
         'campaign': get_object_or_404(Campaign, slug=slug),
-        'zipcode': request.session.get(ZIPCODE_SESSION_KEY, None),
+        'zipcode': request.session.get('cd3000_zipcode', None),
+        'first_name': request.session.get('cd3000_firstname', None),
+        'last_name': request.session.get('cd3000_lastname', None),
+        'email': request.session.get('cd3000_email', None),
     }
     return render_to_response('citizendialer3000/complete.html', data)
 
