@@ -134,7 +134,26 @@ def complete(request, slug):
 
 @login_required
 def results(request, slug):
-    
+    if not request.user.is_staff:
+        return HttpResponseForbidden('You are not allowed to view this page')
+        
+    data = {
+        'campaign': get_object_or_404(Campaign, slug=slug),
+    }
+    return render_to_response('citizendialer3000/results.html', data)
+
+@login_required
+def results_calls(request, slug):
+    if not request.user.is_staff:
+        return HttpResponseForbidden('You are not allowed to view this page')
+        
+    data = {
+        'campaign': get_object_or_404(Campaign, slug=slug),
+    }
+    return render_to_response('citizendialer3000/results.html', data)
+
+@login_required
+def results_summary(request, slug):
     if not request.user.is_staff:
         return HttpResponseForbidden('You are not allowed to view this page')
         
