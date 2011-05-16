@@ -1,5 +1,5 @@
 {% extends "citizendialer3000/base.html" %}
-{% load markup %}
+{% load cd3000_tags %}
 
 {% block content %}
     
@@ -29,28 +29,28 @@
             <p>Suggested conversation script:</p>
             <blockquote>
                 {% if contact.position == '?' %}
-                    {{ campaign.script|markdown }}
+                    {% scriptify campaign.script contact.gender %}
                 {% endif %}
                 {% if contact.position == '+' %}
-                    {{ campaign.support_script|markdown }}
+                    {% scriptify campaign.support_script contact.gender %}
                 {% endif %}
                 {% if contact.position == '-' %}
-                    {{ campaign.oppose_script|markdown }}
+                    {% scriptify campaign.oppose_script contact.gender %}
                 {% endif %}
             </blockquote>
             {% if contact.position == '?' %}
                 <ul>
                     <li>
                         <p>If supports:</p>
-                        <blockquote>{{ campaign.yes_response|markdown }}</blockquote>
+                        <blockquote>{% scriptify campaign.yes_response contact.gender %}</blockquote>
                     </li>
                     <li>
                         <p>If opposes:</p>
-                        <blockquote>{{ campaign.no_response|markdown }}</blockquote>
+                        <blockquote>{% scriptify campaign.no_response contact.gender %}</blockquote>
                     </li>
                     <li>
                         <p>Otherwise:</p>
-                        <blockquote>{{ campaign.other_response|markdown }}</blockquote>
+                        <blockquote>{% scriptify campaign.other_response contact.gender %}</blockquote>
                     </li>
                 </ul>
             {% endif %}
