@@ -13,24 +13,42 @@ from citizendialer3000.models import Campaign, Contact, Call
 import json
 import re
 
-# get custom cache key prefix, if set
 KEY_PREFIX = getattr(settings, 'CD3000_KEY_PREFIX', 'CD3000')
 TIMEOUT = getattr(settings, 'CD3000_CACHE_TIMEOUT', 60 * 10) # 10 minutes
-
-# setup API
-sunlight.apikey = getattr(settings, 'CD3000_SUNLIGHTAPI_KEY')
-
-# zipcode validation regex
 ZIPCODE_RE = re.compile(r'^\d{5}$')
 
+sunlight.apikey = getattr(settings, 'CD3000_SUNLIGHTAPI_KEY')
+
 def callcampaign_list(request):
-    data = {
-        'campaigns': Campaign.objects.filter(is_public=True),
-    }
+    """ Displays all publicly available campaigns.
+    
+        Context:
+            campaigns   - query set of public campaigns
+        
+        Template:
+            citizendialer3000/campaign_list.html
+    """
+    
+    data = {'campaigns': Campaign.objects.filter(is_public=True)}
     return render_to_response('citizendialer3000/campaign_list.html', data,
                               context_instance=RequestContext(request))
 
 def callcampaign_detail(request, slug):
+    """ Display summary info and zipcode search box for campaign
+        specified by slug.
+        
+        If a zipcode query string paramter is present, contacts will be pulled
+        from the Sunlight Labs Congress API. The zipcode will be stored in the
+        user session for use later in the process.
+        
+        Context:
+            campaign    - the current campaign
+            contacts    - list of contacts, if zipcode has been provided
+            zipcode     - if provided
+        
+        Template:
+            citizendialer3000/campaign_detail.html
+    """
     
     campaign = get_object_or_404(Campaign, slug=slug)
     if not campaign.is_public:
@@ -39,7 +57,8 @@ def callcampaign_detail(request, slug):
     data = {'campaign': campaign}
     
     if campaign.is_complete:
-        
+        # campaign is complete, show the wrapup message
+        # include final results if you want to show them
         contacts = campaign.contacts.all().annotate(Count("calls")).order_by('-calls__count')
         data['contacts'] = contacts
     
@@ -62,10 +81,10 @@ def callcampaign_detail(request, slug):
         contacts = Contact.objects.filter(campaign=campaign, bioguide_id__in=bids).annotate(Count("calls"))
         
         if request.is_ajax():
-            
+            # send back JSON response on ajax call
             content = json.dumps({
                 'zipcode': zipcode,
-                'contacts': contacts,
+                'contacts': [c.as_dict() for c in contacts],
             })
             return HttpResponse(content, mimetype='application/json')
             
@@ -77,6 +96,18 @@ def callcampaign_detail(request, slug):
                               context_instance=RequestContext(request))
 
 def contact_detail(request, slug, contact_id):
+    """ Show call script and response form for a particular contact. Response
+        form values are stored in the user session so we can prepopulate
+        the form on the next call.
+    
+        Context:
+            campaign    - the campaign
+            contact     - the contact
+            form        - the response form
+        
+        Template:
+            citizendialer3000/contact_detail.html
+    """
 
     campaign = get_object_or_404(Campaign, slug=slug)
     
@@ -123,6 +154,19 @@ def contact_detail(request, slug, contact_id):
                               context_instance=RequestContext(request))
 
 def complete(request, slug):
+    """ The "thanks" page after response form submission.
+        
+        Context:
+            campaign    - the campaign
+            zipcode     - the zipcode of the caller
+            first_name  - the first name of the caller
+            last_name   - the last name of the caller
+            email       - email address of the caller
+        
+        Template:
+            citizendialer3000/complete.html
+    """
+    
     data = {
         'campaign': get_object_or_404(Campaign, slug=slug),
         'zipcode': request.session.get('cd3000_zipcode', None),
@@ -134,16 +178,30 @@ def complete(request, slug):
 
 @login_required
 def results(request, slug):
+    """ A staff-only results page.
+        
+        Context:
+            campaign    - the campaign
+            calls       - all calls associated with the campaign
+        
+        Template:
+            citizendialer3000/results.html
+    """
+    
     if not request.user.is_staff:
         return HttpResponseForbidden('You are not allowed to view this page')
         
+    campaign = get_object_or_404(Campaign, slug=slug)
     data = {
-        'campaign': get_object_or_404(Campaign, slug=slug),
+        'campaign': campaign,
+        'calls': Call.objects.all(contact__campaign=campaign),
     }
     return render_to_response('citizendialer3000/results.html', data)
 
 @login_required
 def results_calls(request, slug):
+    """ Return a CSV of calls. In progress...
+    """
     if not request.user.is_staff:
         return HttpResponseForbidden('You are not allowed to view this page')
         
@@ -154,6 +212,8 @@ def results_calls(request, slug):
 
 @login_required
 def results_summary(request, slug):
+    """ Return a CSV of calls. In progress...
+    """
     if not request.user.is_staff:
         return HttpResponseForbidden('You are not allowed to view this page')
         

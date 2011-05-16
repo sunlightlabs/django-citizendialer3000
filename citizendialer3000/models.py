@@ -88,6 +88,22 @@ class Contact(models.Model):
             self.party,
             self.state,
         )
+    
+    def as_dict(self):
+        return {
+            'campaign': self.campaign_id,
+            'bioguide_id': self.bioguide_id,
+            'title': self.title,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'nickname': self.nickname,
+            'gender': self.gender,
+            'state': self.state,
+            'party': self.party,
+            'phone': self.phone,
+            'full_name': self.full_name(),
+            'bio_name': self.bio_name(),
+        }
 
 class Call(models.Model):
     contact = models.ForeignKey(Contact, related_name='calls')
