@@ -1,0 +1,6 @@
+{% extends "citizendialer3000/base.html" %}
+
+{% block content %}
+    <h2>{{ campaign.title }} Results</h2>
+    <p>Download <a href="{% url results_summary campaign.slug %}">contact summary CSV</a> or <a href="{% url results_calls campaign.slug %}">complete call results CSV</a>.</p>
+{% endblock %}

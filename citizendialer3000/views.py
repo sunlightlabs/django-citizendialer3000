@@ -12,6 +12,7 @@ from citizendialer3000.forms import CallForm
 from citizendialer3000.models import Campaign, Contact, Call
 import json
 import re
+import tablib
 
 KEY_PREFIX = getattr(settings, 'CD3000_KEY_PREFIX', 'CD3000')
 TIMEOUT = getattr(settings, 'CD3000_CACHE_TIMEOUT', 60 * 10) # 10 minutes
@@ -194,30 +195,64 @@ def results(request, slug):
     campaign = get_object_or_404(Campaign, slug=slug)
     data = {
         'campaign': campaign,
-        'calls': Call.objects.all(contact__campaign=campaign),
+        'calls': Call.objects.filter(contact__campaign=campaign),
     }
     return render_to_response('citizendialer3000/results.html', data)
 
 @login_required
 def results_calls(request, slug):
-    """ Return a CSV of calls. In progress...
+    """ Return a CSV of calls.
     """
+    
     if not request.user.is_staff:
         return HttpResponseForbidden('You are not allowed to view this page')
-        
-    data = {
-        'campaign': get_object_or_404(Campaign, slug=slug),
-    }
-    return render_to_response('citizendialer3000/results.html', data)
+    
+    campaign = get_object_or_404(Campaign, slug=slug)
+    calls = Call.objects.filter(contact__campaign=campaign).select_related()
+    
+    data = tablib.Dataset(headers=[
+        'contact','bioguide_id','position','first_name','last_name',
+        'zipcode','email','notes','timestamp'])
+    
+    for call in calls:
+        data.append((
+            call.contact.full_name(),
+            call.contact.bioguide_id,
+            call.get_position_display(),
+            call.caller_first_name,
+            call.caller_last_name,
+            call.caller_zipcode,
+            call.caller_email,
+            call.notes,
+            call.timestamp,
+        ))
+    
+    return HttpResponse(data.csv, mimetype='text/csv')
 
 @login_required
 def results_summary(request, slug):
-    """ Return a CSV of calls. In progress...
+    """ Return a CSV of calls.
     """
+    
     if not request.user.is_staff:
         return HttpResponseForbidden('You are not allowed to view this page')
-        
-    data = {
-        'campaign': get_object_or_404(Campaign, slug=slug),
-    }
-    return render_to_response('citizendialer3000/results.html', data)
+    
+    campaign = get_object_or_404(Campaign, slug=slug)    
+    contacts = campaign.contacts.all().annotate(Count("calls")).order_by('-calls__count')
+    
+    data = tablib.Dataset(headers=[
+        'call_count','title','first','last','bioguide_id','state','party','phone'])
+    
+    for contact in contacts:
+        data.append((
+            contact.calls__count,
+            contact.title,
+            contact.first_name,
+            contact.last_name,
+            contact.bioguide_id,
+            contact.state,
+            contact.party,
+            contact.phone,
+        ))
+    
+    return HttpResponse(data.csv, mimetype='text/csv')

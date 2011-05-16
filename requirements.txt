@@ -1,2 +1,3 @@
 python-sunlightapi==1.0.0
 markdown
+python-tablib

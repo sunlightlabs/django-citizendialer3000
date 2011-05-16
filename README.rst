@@ -21,6 +21,7 @@ Requirements
 
 * django >= 1.2.0
 * django.contrib.messages
+* python-tablib
 
 -------------
 Configuration
