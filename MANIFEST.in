@@ -1,3 +1,4 @@
 include LICENSE
 include README.rst
 include requirements.txt
+recursive-include citizendialer3000/templates *.html
