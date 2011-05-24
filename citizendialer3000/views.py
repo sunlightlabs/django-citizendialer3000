@@ -55,7 +55,10 @@ def callcampaign_detail(request, slug):
     if not campaign.is_public:
         return HttpResponseRedirect(reverse('call_list'))
     
-    data = {'campaign': campaign}
+    data = {
+        'campaign': campaign,
+        'called': request.session.get("%s.called" % campaign.slug, []),
+    }
     
     if campaign.is_complete:
         # campaign is complete, show the wrapup message
@@ -130,8 +133,17 @@ def contact_detail(request, slug, contact_id):
         request.session['cd3000_email'] = request.POST.get('caller_email', None)
         
         if form.is_valid():
+            
             form.save()
+            
+            # add list of called to session
+            session_key = "%s.called" % campaign.slug
+            called = request.session.get(session_key, [])
+            called.append(contact.bioguide_id)
+            request.session[session_key] = called
+            
             return HttpResponseRedirect(reverse('call_complete', args=[slug]))
+            
         else:
             #### generate error message from form errors?
             messages.error(request, 'Whoops, something went wrong.')
