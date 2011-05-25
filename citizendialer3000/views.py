@@ -120,7 +120,7 @@ def contact_detail(request, slug, bioguide_id):
     elif not campaign.is_public:
         return HttpResponseRedirect(reverse('callcampaign_list'))
         
-    contact = get_object_or_404(Contact, bioguide_id=bioguide_id)
+    contact = get_object_or_404(Contact, campaign=campaign, bioguide_id=bioguide_id)
     
     if request.method == 'POST':
         
