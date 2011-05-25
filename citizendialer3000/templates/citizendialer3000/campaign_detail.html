@@ -41,9 +41,9 @@
                     {% for contact in contacts %}
                         <li>
                             <img src="http://assets.sunlightfoundation.com/moc/100x125/{{ contact.bioguide_id }}.jpg" class="avatar">
-                            <a href="{% url call_contact campaign.slug contact.pk %}">{{ contact.bio_name }}</a>
+                            <a href="{% url call_contact campaign.slug contact.bioguide_id %}">{{ contact.bio_name }}</a>
                             <p>{{ contact.calls__count }} call{{ contact.calls__count|pluralize }} reported</p>
-                            <a href="{% url call_contact campaign.slug contact.pk %}">Call now</a>
+                            <a href="{% url call_contact campaign.slug contact.bioguide_id %}">Call now</a>
                         </li>
                     {% endfor %}
                 </ul>

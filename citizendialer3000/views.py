@@ -99,7 +99,7 @@ def callcampaign_detail(request, slug):
     return render_to_response('citizendialer3000/campaign_detail.html', data,
                               context_instance=RequestContext(request))
 
-def contact_detail(request, slug, contact_id):
+def contact_detail(request, slug, bioguide_id):
     """ Show call script and response form for a particular contact. Response
         form values are stored in the user session so we can prepopulate
         the form on the next call.
@@ -120,7 +120,7 @@ def contact_detail(request, slug, contact_id):
     elif not campaign.is_public:
         return HttpResponseRedirect(reverse('callcampaign_list'))
         
-    contact = get_object_or_404(Contact, pk=contact_id)
+    contact = get_object_or_404(Contact, bioguide_id=bioguide_id)
     
     if request.method == 'POST':
         

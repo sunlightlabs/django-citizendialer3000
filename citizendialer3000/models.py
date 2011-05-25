@@ -72,7 +72,7 @@ class Contact(models.Model):
         
     @models.permalink
     def get_absolute_url(self):
-        return ('citizendialer3000.views.contact_detail', (self.campaign.slug, self.pk))
+        return ('citizendialer3000.views.contact_detail', (self.campaign.slug, self.bioguide_id))
     
     def full_name(self):
         return u"%s %s" % (

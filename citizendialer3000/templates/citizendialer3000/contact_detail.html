@@ -57,7 +57,7 @@
         </li>
         <li>
             <p>Record the response.</p>
-            <form action="{% url call_contact campaign.slug contact.pk %}" method="post">
+            <form action="{% url call_contact campaign.slug contact.bioguide_id %}" method="post">
                 {% csrf_token %}
                 <ul>
                     <li>
