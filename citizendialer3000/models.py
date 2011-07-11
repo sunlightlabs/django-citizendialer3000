@@ -37,6 +37,8 @@ class Campaign(models.Model):
         
     wrapup = models.TextField(blank=True,
         help_text="Text to be shown once campaign is complete")
+        
+    use_photos = models.BooleanField(default=True, help_text="Use bioguide photos")
     
     class Meta:
         ordering = ('title',)
