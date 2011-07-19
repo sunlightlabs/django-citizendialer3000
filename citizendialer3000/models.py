@@ -56,7 +56,7 @@ class Contact(models.Model):
     title = models.CharField(max_length=8)
     first_name = models.CharField(max_length=32)
     last_name = models.CharField(max_length=64)
-    nickname = models.CharField(max_length=32)
+    nickname = models.CharField(max_length=32, blank=True)
     gender = models.CharField(max_length=1)
     state = USStateField()
     party = models.CharField(max_length=1)
