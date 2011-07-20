@@ -231,11 +231,11 @@ def results_calls(request, slug):
             call.contact.full_name(),
             call.contact.bioguide_id,
             call.get_position_display(),
-            call.caller_first_name,
-            call.caller_last_name,
-            call.caller_zipcode,
-            call.caller_email,
-            call.notes,
+            call.caller_first_name.encode('ascii', 'replace'),
+            call.caller_last_name.encode('ascii', 'replace'),
+            call.caller_zipcode.encode('ascii', 'replace'),
+            call.caller_email.encode('ascii', 'replace'),
+            call.notes.encode('ascii', 'replace'),
             call.timestamp,
         ))
     
